@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { Wallpaper } from "../background/wallpaper";
 
 export function InputSignUp() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -10,7 +9,7 @@ export function InputSignUp() {
     <View className="w-11/12 max-w-md mx-auto">
       {/* Nome */}
       <View className="mb-4">
-        <Text className="text-xs text-gray-500 mb-2">Nome</Text>
+        <Text className="text-xs text-white mb-2">Nome</Text>
         <View className="flex-row items-center bg-white rounded-2xl px-3 py-2 border border-gray-200 shadow-sm">
           <Feather name="user" size={18} color="#6B7280" />
           <TextInput
@@ -27,7 +26,7 @@ export function InputSignUp() {
 
       {/* E-mail */}
       <View className="mb-4">
-        <Text className="text-xs text-gray-500 mb-2">E-mail</Text>
+        <Text className="text-xs text-white mb-2">E-mail</Text>
         <View className="flex-row items-center bg-white rounded-2xl px-3 py-2 border border-gray-200 shadow-sm">
           <Feather name="mail" size={18} color="#6B7280" />
           <TextInput
@@ -45,7 +44,7 @@ export function InputSignUp() {
 
       {/* Senha */}
       <View>
-        <Text className="text-xs text-gray-500 mb-2">Senha</Text>
+        <Text className="text-xs text-white mb-2">Senha</Text>
         <View className="flex-row items-center bg-white rounded-2xl px-3 py-2 border border-gray-200 shadow-sm">
           <Feather name="lock" size={18} color="#6B7280" />
           <TextInput
