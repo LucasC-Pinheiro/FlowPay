@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" width="260" height="260">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00A3B4" />
+      <stop offset="100%" stop-color="#013158" />
+    </linearGradient>
+    <linearGradient id="g2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00C3D4" />
+      <stop offset="100%" stop-color="#013158" />
+    </linearGradient>
+  </defs>
+
+  <!-- invisible alignment circle -->
+  <circle cx="130" cy="130" r="120" fill="none" />
+
+  <!-- left semicircle: rotated +30deg around center and nudged left/up -->
+  <g transform="rotate(30 130 130) translate(-18,-8)">
+    <path d="M130 50 A80 80 0 0 0 130 210 L130 130 Z" fill="url(#g1)" />
+  </g>
+
+  <!-- right semicircle: rotated +30deg around center and nudged right/down -->
+  <g transform="rotate(30 130 130) translate(18,8)">
+    <path d="M130 50 A80 80 0 0 1 130 210 L130 130 Z" fill="url(#g2)" />
+  </g>
+
+</svg>
