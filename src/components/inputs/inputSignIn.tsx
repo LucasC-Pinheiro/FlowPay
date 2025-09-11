@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 
 import { Feather } from "@expo/vector-icons";
-
+import { router, useRouter } from "expo-router";
 import { ButtonSignIn } from "../button/buttonSignIn";
 
 type InputSignInProps = {
@@ -10,6 +10,8 @@ type InputSignInProps = {
 };
 
 export function InputSignIn({ onSignIn }: InputSignInProps) {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,6 +26,7 @@ export function InputSignIn({ onSignIn }: InputSignInProps) {
       return;
     }
     setError("");
+    router.push('/(screens)/home');
     onSignIn(email, password);
   }
 
