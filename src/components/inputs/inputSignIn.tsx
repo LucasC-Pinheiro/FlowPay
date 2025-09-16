@@ -6,7 +6,7 @@ import { router, useRouter } from "expo-router";
 import { ButtonSignIn } from "../button/buttonSignIn";
 
 type InputSignInProps = {
-  onSignIn: (email: string, password: string) => void;
+  onSignIn: (email: string, password: string) => Promise<void>;
 };
 
 export function InputSignIn({ onSignIn }: InputSignInProps) {
@@ -18,7 +18,7 @@ export function InputSignIn({ onSignIn }: InputSignInProps) {
 
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     // Lógica de autenticação aqui
 
     if (!email || !password) {
@@ -26,8 +26,13 @@ export function InputSignIn({ onSignIn }: InputSignInProps) {
       return;
     }
     setError("");
-    router.push('/(screens)/home');
-    onSignIn(email, password);
+    
+    try {
+      await onSignIn(email, password);
+      router.push('/(screens)/home');
+    } catch (error) {
+      setError("Falha na autenticação");
+    }
   }
 
   return (
