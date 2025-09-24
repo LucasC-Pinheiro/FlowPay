@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
 import { 
-  Image, 
   Text, 
   View, 
   TouchableOpacity, 
-  ScrollView } from 'react-native';
+  ScrollView, } from 'react-native';
 
 import LogoTest from '@/src/components/logo/LogoTest';
 import { ButtonPerfil } from '@/src/components/button/buttonPerfil';
+import { ButtonAddCustomer } from '@/src/components/button/buttonAddCustomer';
+
+import { useRef } from 'react';
+import { BottomSheetCliente, BottomSheetHandle } from '@/src/components/button/bottomSheetCliente';
+
 
 export default function Home() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  
+  const sheetRef = useRef<BottomSheetHandle>(null);
+
   const today = new Date();
   const dayOfWeek = today.getDay();
   const mondayOffset = (dayOfWeek + 6) % 7; 
@@ -26,6 +31,7 @@ export default function Home() {
   });
  
   const weekdayShorts = ['Seg','Ter','Qua','Qui','Sex','Sab','Dom'];
+
 
   return (
     <View className="flex-1 justify-center items-center bg-gray-900">
@@ -69,7 +75,7 @@ export default function Home() {
                   </TouchableOpacity>
                 );
               })}
-        </ScrollView>
+          </ScrollView>
 
             <View className="mt-4 left-3">
             {selectedDay !== null ? (
@@ -81,9 +87,17 @@ export default function Home() {
             ) : (
               <Text className="text-white/70 font-bold">Selecione um dia</Text>
             )}
+
+            <ButtonAddCustomer
+              onPress={() => {
+                sheetRef.current?.present();
+              }}
+            />
+
+            <BottomSheetCliente ref={sheetRef} />
+
             </View>
           </View>
-          <Text className="text-white text-2xl">Home Screen</Text>
     </View>
   );
 }

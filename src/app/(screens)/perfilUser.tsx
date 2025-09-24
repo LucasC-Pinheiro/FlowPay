@@ -19,6 +19,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/src/contexts/authContext';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function PerfilUser() {
   const { user, updateUserPhoto } = useAuth();
@@ -55,9 +56,29 @@ export default function PerfilUser() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900">
-      <View className="items-center mt-8">
-        
+      <TouchableOpacity
+        onPress={() => router.push('/(screens)/home')}
+        style={{
+          position: 'absolute',
+          top: 60,
+          left: 20,
+          backgroundColor: '#ef4444',
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+          borderRadius: 999,
+          zIndex: 50,
+        }}
+        accessibilityLabel="Voltar"
+      >
+        <Ionicons 
+        name="exit-outline" 
+        size={24} 
+        color="white" 
+        style={{ transform: [{ rotate: '180deg' }] }}
+        />
+      </TouchableOpacity>
 
+      <View className="items-center mt-8">
         <Image
           source={{ uri: image ?? user?.photo ?? 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg' }}
           className="w-44 h-44 rounded-full border-4 border-blue-500 mt-4"
@@ -75,18 +96,6 @@ export default function PerfilUser() {
           <Text className="text-white font-semibold">Editar Perfil</Text>
         </TouchableOpacity>
         </View>
-
-        <View className='items-center mt-auto'>
-        <TouchableOpacity
-          onPress={() => {
-            router.push('/(screens)/home');
-          }}
-          className='mt-3 bg-red-500 px-4 py-2 rounded-full'
-        >
-          <Text className="text-white font-semibold">Voltar para Home</Text>
-        </TouchableOpacity>
-        </View>
-
     </SafeAreaView>
   );
 }
