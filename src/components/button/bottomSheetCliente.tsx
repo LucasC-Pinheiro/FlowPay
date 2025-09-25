@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   Switch,
   Pressable,
+  TextInput,
 } from 'react-native';
 
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -35,6 +36,12 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
   }));
 
   const [value, setValue] = React.useState<number | null>(null);
+  
+  const [clientName, setClientName] = React.useState<string>('');
+  const [contactName, setContactName] = React.useState<string>('');
+  const [phone, setPhone] = React.useState<string>('');
+  const [document, setDocument] = React.useState<string>('');
+  const [address, setAddress] = React.useState<string>('');
 
   const randomFutureDate = () => {
     const today = new Date();
@@ -190,12 +197,109 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
                   </View>
                 )}
               </View>
-
             </View>
-          </BottomSheetView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </BottomSheetModal>
+
+            <View
+              className='
+              h-px
+              bg-[#444]
+              my-4
+              '
+            />
+
+              <View>
+                <View style={{ marginTop: 12 }}>
+                  <Text className="text-white text-lg font-semibold">Nome do cliente</Text>
+                  <TextInput
+                    value={clientName}
+                    onChangeText={setClientName}
+                    placeholder="Ex: João da Silva | Loja do Bairro"
+                    placeholderTextColor={'#888'}
+                    style={{
+                      height: 50,
+                      borderColor: '#ccc',
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      color: '#fff',
+                      marginTop: 8,
+                    }}
+                  />
+
+                  <Text className="text-white text-lg font-semibold mt-3">Contato</Text>
+                  <TextInput
+                    value={contactName}
+                    onChangeText={setContactName}
+                    placeholder="Ex: joao@gmail.com"
+                    placeholderTextColor={'#888'}
+                    style={{
+                      height: 50,
+                      borderColor: '#ccc',
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      color: '#fff',
+                      marginTop: 8,
+                    }}
+                  />
+
+                  <Text className="text-white text-lg font-semibold mt-3">Telefone</Text>
+                  <TextInput
+                    value={phone}
+                    onChangeText={setPhone}
+                    placeholder="Ex: (99) 9 9999-9999"
+                    placeholderTextColor={'#888'}
+                    keyboardType="phone-pad"
+                    style={{
+                      height: 50,
+                      borderColor: '#ccc',
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      color: '#fff',
+                      marginTop: 8,
+                    }}
+                  />
+
+                  <Text className="text-white text-lg font-semibold mt-3">CNPJ ou CPF</Text>
+                  <TextInput
+                    value={document}
+                    onChangeText={setDocument}
+                    placeholder="Ex: 12.345.678/0001-95"
+                    placeholderTextColor={'#888'}
+                    style={{
+                      height: 50,
+                      borderColor: '#ccc',
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      color: '#fff',
+                      marginTop: 8,
+                    }}
+                  />
+
+                  <Text className="text-white text-lg font-semibold mt-3">Endereço</Text>
+                  <TextInput
+                    value={address}
+                    onChangeText={setAddress}
+                    placeholder="Ex: Rua das Flores, 123, Bairro, Cidade"
+                    placeholderTextColor={'#888'}
+                    style={{
+                      height: 50,
+                      borderColor: '#ccc',
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      color: '#fff',
+                      marginTop: 8,
+                    }}
+                  />
+                </View>
+              </View>
+            </BottomSheetView>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </BottomSheetModal>
   );
 });
 
