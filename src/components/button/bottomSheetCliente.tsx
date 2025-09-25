@@ -7,6 +7,8 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
+  Switch,
+  Pressable,
 } from 'react-native';
 
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -51,6 +53,12 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
     }
     setDatePickerVisible(false);
   };
+
+  const [isOn, setIsOn] = React.useState(false);
+
+  const [showList, setShowList] = React.useState(false);
+  const data = ['Semanalmente', 'Mensalmente', 'Anualmente'];
+  const [selectedFreq, setSelectedFreq] = React.useState<string>(data[0]);
 
   return (
     <BottomSheetModal
@@ -134,6 +142,55 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
                   themeVariant="dark"
                 />
               )}
+            </View>
+            <View 
+            className="flex-row items-center left-1"
+            style={Platform.OS === 'ios' ? { marginTop: 20 } : { marginTop: 5 }}
+            >
+              <Text className="text-white text-lg font-semibold mr-2">
+                Cobrança recorrente?
+              </Text>
+              <Switch
+                value={isOn}
+                onValueChange={setIsOn}
+                thumbColor={isOn ? '#0396bb' : '#f3f4f6'}
+                trackColor={{ false: '#374151', true: '#00C2CB' }}
+                style={
+                  Platform.OS === "ios"
+                    ? { transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] } // só reduz no iOS
+                    : undefined
+                }
+              />
+
+              <View style={{ marginLeft: 12, position: 'relative' }}>
+                <Pressable
+                  onPress={() => setShowList((s) => !s)}
+                  style={{
+                    paddingVertical: 8,
+                    paddingHorizontal: 12,
+                    borderRadius: 999,
+                    borderWidth: 1,
+                    borderColor: '#333',
+                    backgroundColor: '#111827',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ color: '#fff', marginRight: 8 }}>{selectedFreq}</Text>
+                  <Ionicons name="chevron-down" size={18} color="#0396bb" />
+                </Pressable>
+
+                {showList && (
+                  <View style={{ position: 'absolute', top: 52, left: 0, backgroundColor: '#0b1220', borderRadius: 8, borderWidth: 1, borderColor: '#222', overflow: 'hidden', zIndex: 1000, minWidth: 140 }}>
+                    {data.map((item) => (
+                      <Pressable key={item} onPress={() => { setSelectedFreq(item); setShowList(false); }} style={{ paddingVertical: 10, paddingHorizontal: 12 }}>
+                        <Text style={{ color: '#fff' }}>{item}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+
             </View>
           </BottomSheetView>
         </TouchableWithoutFeedback>
