@@ -8,6 +8,7 @@ import {
 import LogoTest from '@/src/components/logo/LogoTest';
 import { ButtonPerfil } from '@/src/components/button/buttonPerfil';
 import { ButtonAddCustomer } from '@/src/components/button/buttonAddCustomer';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useRef } from 'react';
 import { BottomSheetCliente, BottomSheetHandle } from '@/src/components/button/bottomSheetCliente';
@@ -15,6 +16,7 @@ import { BottomSheetCliente, BottomSheetHandle } from '@/src/components/button/b
 
 export default function Home() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [payments, setPayments] = useState<Array<{ name: string; value?: number | null; date?: string }>>([]);
   const sheetRef = useRef<BottomSheetHandle>(null);
 
   const today = new Date();
@@ -88,16 +90,66 @@ export default function Home() {
               <Text className="text-white/70 font-bold">Selecione um dia</Text>
             )}
 
+            {/* If there's a payment for the selected day, show it; otherwise show the empty card */}
+            {(() => {
+              const selectedDate = typeof selectedDay === 'number' ? weekDates[selectedDay] : null;
+              const paymentsForDay = selectedDate
+                ? payments.filter(p => {
+                    const pd = p.date ? new Date(p.date) : null;
+                    return pd && pd.toDateString() === selectedDate.toDateString();
+                  })
+                : [];
+
+              if (paymentsForDay.length > 0) {
+                return (
+                  <View className="space-y-3 mt-3 mb-3 w-full max-w-[95%]">
+                    {paymentsForDay.map((payment, idx) => (
+                      <View key={`${payment.name}-${idx}`} className="relative bg-green-700 rounded-lg px-3 py-3 mt-2">
+                        <View className="absolute top-2 left-2 mt-1">
+                          <Ionicons name="calendar" size={20} color="#e5e7eb" />
+                        </View>
+                        <View className="ml-8">
+                          <Text className="text-gray-200 text-sm">A receber</Text>
+                          <Text className="text-white font-bold text-lg">{payment.name}</Text>
+                          <Text className="text-white/80 mt-1">{payment.value ? `R$ ${Number(payment.value).toFixed(2)}` : ''}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                );
+              }
+
+              return (
+                <View className="relative bg-gray-700 rounded-lg px-3 py-3 mt-3 mb-3 w-full max-w-[95%]">
+                  <View className="absolute top-2 left-2 mt-1">
+                    <Ionicons name="calendar" size={20} color="#e5e7eb" />
+                  </View>
+                  <View className="ml-8">
+                    <Text className="text-white font-bold mb-1">Nenhum pagamento agendado para hoje</Text>
+                    <Text className="text-gray-200">Acompanhe seus próximos recebimentos ou revise seu histórico.</Text>
+                  </View>
+                </View>
+              );
+            })()}
+
+            <View className="mt-2">
             <ButtonAddCustomer
               onPress={() => {
                 sheetRef.current?.present();
               }}
             />
 
-            <BottomSheetCliente ref={sheetRef} />
-
+            <BottomSheetCliente
+              ref={sheetRef}
+              onAdd={(client) => {
+                setPayments((prev) => [...prev, { name: client.name, value: client.value ?? null, date: client.date ? client.date.toString() : undefined }]);
+              }}
+            />
+            </View>
             </View>
           </View>
+
+
     </View>
   );
 }

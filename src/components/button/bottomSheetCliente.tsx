@@ -22,7 +22,19 @@ export type BottomSheetHandle = {
   dismiss: () => void;
 };
 
-export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => {
+interface BottomSheetProps {
+  onAdd?: (client: {
+    name: string;
+    contact?: string;
+    phone?: string;
+    document?: string;
+    address?: string;
+    value?: number | null;
+    date?: Date | null;
+  }) => void;
+}
+
+export const BottomSheetCliente = forwardRef<BottomSheetHandle, BottomSheetProps>(({ onAdd }, ref) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['50%', '80%'], []);
 
@@ -246,8 +258,13 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
                   <Text className="text-white text-lg font-semibold mt-3">Telefone</Text>
                   <TextInput
                     value={phone}
-                    onChangeText={setPhone}
-                    placeholder="Ex: (99) 9 9999-9999"
+                    onChangeText={(t) => {
+                      // keep only digits, limit to 11 (DDD + 9 digits) — accepts 10 or 11 but caps to 11
+                      const digits = t.replace(/\D/g, '');
+                      const limited = digits.slice(0, 11);
+                      setPhone(limited);
+                    }}
+                    placeholder="Ex: 999999999"
                     placeholderTextColor={'#888'}
                     keyboardType="phone-pad"
                     style={{
@@ -264,8 +281,12 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
                   <Text className="text-white text-lg font-semibold mt-3">CNPJ ou CPF</Text>
                   <TextInput
                     value={document}
-                    onChangeText={setDocument}
-                    placeholder="Ex: 12.345.678/0001-95"
+                    onChangeText={(t) => {
+                      const digits = t.replace(/\D/g, '');
+                      const limited = digits.length <= 11 ? digits.slice(0, 11) : digits.slice(0, 14);
+                      setDocument(limited);
+                    }}
+                    placeholder="Ex: 12345678901 ou 12345678000195"
                     placeholderTextColor={'#888'}
                     style={{
                       height: 50,
@@ -317,7 +338,7 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
                     mr-2
                     '
                   >
-                    <Text className='text-white'>Cancelar</Text>
+                    <Text className='text-white font-semibold'>Cancelar</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -327,8 +348,21 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
                     items-center
                     rounded-lg
                     '
+                    onPress={() => {
+                      const payload = {
+                        name: clientName,
+                        contact: contactName,
+                        phone,
+                        document,
+                        address,
+                        value,
+                        date,
+                      };
+                      onAdd?.(payload);
+                      bottomSheetRef.current?.dismiss();
+                    }}
                   >
-                    <Text>Salvar alterações</Text>
+                    <Text className='text-white font-semibold'>Salvar alterações</Text>
                   </TouchableOpacity>
                 </View>
 
