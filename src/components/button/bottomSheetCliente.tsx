@@ -164,7 +164,7 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
                 trackColor={{ false: '#374151', true: '#00C2CB' }}
                 style={
                   Platform.OS === "ios"
-                    ? { transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] } // só reduz no iOS
+                    ? { transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }], marginTop: 4 } // só reduz no iOS
                     : undefined
                 }
               />
@@ -295,6 +295,43 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle>((props, ref) => 
                     }}
                   />
                 </View>
+
+
+                <View className='
+                mt-6
+                space-y-2
+                flex-row
+                justify-end
+                items-end
+                right-4
+                '
+                >
+
+                  <TouchableOpacity
+                    onPress={() => bottomSheetRef.current?.dismiss()}
+                    className='
+                    bg-gray-600 
+                    p-3
+                    items-center
+                    rounded-lg
+                    mr-2
+                    '
+                  >
+                    <Text className='text-white'>Cancelar</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    className='
+                    bg-blue-500 
+                    p-3
+                    items-center
+                    rounded-lg
+                    '
+                  >
+                    <Text>Salvar alterações</Text>
+                  </TouchableOpacity>
+                </View>
+
               </View>
             </BottomSheetView>
           </TouchableWithoutFeedback>
