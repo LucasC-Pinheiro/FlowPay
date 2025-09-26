@@ -12,6 +12,8 @@ import LogoTest from '@/src/components/logo/LogoTest';
 import { ButtonPerfil } from '@/src/components/button/buttonPerfil';
 import { ButtonAddCustomer } from '@/src/components/button/buttonAddCustomer';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 import { BottomSheetCliente, BottomSheetHandle } from '@/src/components/button/bottomSheetCliente';
 
@@ -41,6 +43,13 @@ export default function Home() {
   });
  
   const weekdayShorts = ['Seg','Ter','Qua','Qui','Sex','Sab','Dom'];
+
+  const router = useRouter();
+
+  // Persist payments to AsyncStorage whenever mudam
+  React.useEffect(() => {
+    AsyncStorage.setItem('@FlowPay:payments', JSON.stringify(payments)).catch(() => {});
+  }, [payments]);
 
 
   return (
@@ -98,7 +107,7 @@ export default function Home() {
               <Text className="text-white/70 font-bold">Selecione um dia</Text>
             )}
 
-            {/* If there's a payment for the selected day, show it; otherwise show the empty card */}
+
             {(() => {
               const selectedDate = typeof selectedDay === 'number' ? weekDates[selectedDay] : null;
               const paymentsForDay = selectedDate
@@ -202,6 +211,26 @@ export default function Home() {
               }}
             />
             </View>
+            {/* Lista horizontal de botões quadrados representando empresas/pessoas */}
+              <View className="mt-16 w-full max-w-[95%]">
+                <View className='flex-row justify-between items-center mb-1 px-3'>
+                  <Text className="text-white font-bold mb-2">Clientes</Text>
+                  <TouchableOpacity onPress={() => router.push('/(screens)/clients' as any)} disabled={payments.length === 0}>
+                    <Text style={{ color: payments.length === 0 ? '#9ca3af' : '#58a6e3', fontWeight: '700' }} className="text-blue-500 font-bold">Ver todos</Text>
+                  </TouchableOpacity>
+                </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 8 }}>
+                {payments.map((p) => (
+                  <TouchableOpacity key={p.id} onPress={() => { if (sheetRef.current && sheetRef.current.presentWith) sheetRef.current.presentWith(p); }} style={{ width: 100, height: 100, marginRight: 12 }} activeOpacity={0.85}>
+                    <View style={{ flex: 1, backgroundColor: '#0f172a', borderRadius: 12, padding: 8, borderWidth: 1, borderColor: '#334155', alignItems: 'center', justifyContent: 'center' }}>
+                      <Ionicons name="business-outline" size={28} color="#06b6d4" />
+                        <Text style={{ color: '#fff', fontWeight: '700', marginTop: 8 }} numberOfLines={1}>{p.name}</Text>
+                      <Text style={{ color: '#9ca3af', fontSize: 12 }} numberOfLines={1}>{p.contact ?? ''}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              </View>
             </View>
           </View>
 
