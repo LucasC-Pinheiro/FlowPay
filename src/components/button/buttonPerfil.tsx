@@ -1,3 +1,4 @@
+// Botão de perfil que navega para a tela de perfil do usuário.
 import React from "react";
 import { TouchableOpacity, Image } from "react-native";
 

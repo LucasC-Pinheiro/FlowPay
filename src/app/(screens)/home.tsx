@@ -1,23 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Text, 
   View, 
   TouchableOpacity, 
-  ScrollView, } from 'react-native';
+  ScrollView,
+  FlatList,
+  Dimensions,
+} from 'react-native';
 
 import LogoTest from '@/src/components/logo/LogoTest';
 import { ButtonPerfil } from '@/src/components/button/buttonPerfil';
 import { ButtonAddCustomer } from '@/src/components/button/buttonAddCustomer';
 import { Ionicons } from '@expo/vector-icons';
 
-import { useRef } from 'react';
 import { BottomSheetCliente, BottomSheetHandle } from '@/src/components/button/bottomSheetCliente';
 
 
 export default function Home() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [payments, setPayments] = useState<Array<{ name: string; value?: number | null; date?: string }>>([]);
+  type Payment = { id: number; name: string; value?: number | null; date?: string; contact?: string; phone?: string; document?: string; address?: string };
+  const [payments, setPayments] = useState<Array<Payment>>([]);
   const sheetRef = useRef<BottomSheetHandle>(null);
+
+  // carousel state for payments list
+  const flatRef = useRef<FlatList<any> | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState<number>(0);
+  const CARD_WIDTH = Math.min(Dimensions.get('window').width * 0.83, 360);
 
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -101,20 +109,59 @@ export default function Home() {
                 : [];
 
               if (paymentsForDay.length > 0) {
+                // Agrupa pagamentos em páginas de 3 itens
+                const itemsPerPage = 3;
+                const pages: Array<Payment[]> = [];
+                for (let i = 0; i < paymentsForDay.length; i += itemsPerPage) {
+                  pages.push(paymentsForDay.slice(i, i + itemsPerPage));
+                }
+
                 return (
-                  <View className="space-y-3 mt-3 mb-3 w-full max-w-[95%]">
-                    {paymentsForDay.map((payment, idx) => (
-                      <View key={`${payment.name}-${idx}`} className="relative bg-green-700 rounded-lg px-3 py-3 mt-2">
-                        <View className="absolute top-2 left-2 mt-1">
-                          <Ionicons name="calendar" size={20} color="#e5e7eb" />
+                  <View className="mt-3 mb-3 w-full max-w-[95%]">
+                    <FlatList
+                      ref={flatRef}
+                      data={pages}
+                      horizontal
+                      pagingEnabled
+                      showsHorizontalScrollIndicator={false}
+                      decelerationRate="fast"
+                      snapToInterval={CARD_WIDTH}
+                      snapToAlignment="center"
+                      contentContainerStyle={{ paddingHorizontal: 8 }}
+                      keyExtractor={(_, idx) => String(idx)}
+                      renderItem={({ item: page }) => (
+                        <View style={{ width: CARD_WIDTH, marginHorizontal: 8 }}>
+                          {/* cada página contém até 3 itens na vertical */}
+                          {page.map((it: Payment) => (
+                            <TouchableOpacity key={it.id} activeOpacity={0.9} onPress={() => { if (sheetRef.current && sheetRef.current.presentWith) sheetRef.current.presentWith(it); }} style={{ marginBottom: 10 }}>
+                              <View className="relative bg-green-700 rounded-lg px-3 py-3">
+                                <View className="absolute top-2 left-2 mt-1">
+                                  <Ionicons name="calendar" size={20} color="#e5e7eb" />
+                                </View>
+                                <View className="ml-8">
+                                  <Text className="text-gray-200 text-sm">A receber</Text>
+                                  <Text className="text-white font-bold text-lg">{it.name}</Text>
+                                  <Text className="text-white/80 mt-1">{it.value ? `R$ ${Number(it.value).toFixed(2)}` : ''}</Text>
+                                </View>
+                              </View>
+                            </TouchableOpacity>
+                          ))}
                         </View>
-                        <View className="ml-8">
-                          <Text className="text-gray-200 text-sm">A receber</Text>
-                          <Text className="text-white font-bold text-lg">{payment.name}</Text>
-                          <Text className="text-white/80 mt-1">{payment.value ? `R$ ${Number(payment.value).toFixed(2)}` : ''}</Text>
-                        </View>
+                      )}
+                      onMomentumScrollEnd={(ev) => {
+                        const index = Math.round(ev.nativeEvent.contentOffset.x / CARD_WIDTH);
+                        setCarouselIndex(index);
+                      }}
+                    />
+
+                    {/* Dots: aparecem somente se houver mais de 3 itens (ou seja, mais de 1 página) */}
+                    {pages.length > 1 && (
+                      <View className="flex-row justify-center items-center mt-3">
+                        {pages.map((_, idx) => (
+                          <View key={idx} style={{ width: carouselIndex === idx ? 10 : 6, height: carouselIndex === idx ? 10 : 6, borderRadius: 10, marginHorizontal: 4, backgroundColor: carouselIndex === idx ? '#fff' : '#6b7280' }} />
+                        ))}
                       </View>
-                    ))}
+                    )}
                   </View>
                 );
               }
@@ -142,7 +189,16 @@ export default function Home() {
             <BottomSheetCliente
               ref={sheetRef}
               onAdd={(client) => {
-                setPayments((prev) => [...prev, { name: client.name, value: client.value ?? null, date: client.date ? client.date.toString() : undefined }]);
+                setPayments((prev) => {
+                  if (client?.id != null) {
+                    return prev.map(p => p.id === client.id ? { ...p, name: client.name, value: client.value ?? null, date: client.date ? new Date(client.date).toString() : p.date, contact: client.contact, phone: client.phone, document: client.document, address: client.address } : p);
+                  }
+                  const id = Math.floor(Math.random() * 1000000);
+                  return [...prev, { id, name: client.name, value: client.value ?? null, date: client.date ? new Date(client.date).toString() : undefined, contact: client.contact, phone: client.phone, document: client.document, address: client.address }];
+                });
+              }}
+              onDelete={(id) => {
+                setPayments((prev) => prev.filter(p => p.id !== id));
               }}
             />
             </View>

@@ -1,3 +1,4 @@
+// Botão de entrada (Sign In) com link para a tela de cadastro.
 import { TouchableOpacity, View, Text } from "react-native";
 import { router } from "expo-router";
 

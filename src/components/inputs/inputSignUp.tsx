@@ -1,3 +1,4 @@
+// Formulário de cadastro (nome, e-mail e senha) com validação básica.
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Button } from "react-native";
 

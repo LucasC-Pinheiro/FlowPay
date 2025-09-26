@@ -1,3 +1,4 @@
+// Layout raiz: providers de gesture, bottom-sheet e contexto de autenticação.
 import "../../global.css";
 
 import { StatusBar } from "react-native";

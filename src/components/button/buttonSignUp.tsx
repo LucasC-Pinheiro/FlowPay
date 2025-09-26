@@ -1,3 +1,4 @@
+// Botão de cadastro (Sign Up) reutilizável com link para login.
 import { TouchableOpacity, View, Text } from "react-native";
 import { router } from "expo-router";
 

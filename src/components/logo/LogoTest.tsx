@@ -1,3 +1,4 @@
+// Componente de logo SVG usado no cabeçalho da aplicação.
 import React from 'react';
 import { View } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, G, Path } from 'react-native-svg';

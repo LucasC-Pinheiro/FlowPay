@@ -1,3 +1,4 @@
+// Background com Skia para o visual da tela inicial.
 import {
   Canvas,
   Fill,

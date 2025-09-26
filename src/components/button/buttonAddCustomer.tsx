@@ -1,3 +1,4 @@
+// Botão: abre o BottomSheet para adicionar um cliente.
 import { Text, TouchableOpacity } from 'react-native';
 
 type ButtonAddCustomerProps = {
