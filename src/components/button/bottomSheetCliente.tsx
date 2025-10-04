@@ -12,6 +12,7 @@ import {
   Switch,
   Pressable,
   TextInput,
+  ScrollView,
 } from 'react-native';
 
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -27,14 +28,14 @@ export type BottomSheetHandle = {
 
 interface BottomSheetProps {
   onAdd?: (client: any) => void;
-  onDelete?: (id: number) => void;
+  onDelete?: (id: any) => void;
 }
 
 export const BottomSheetCliente = forwardRef<BottomSheetHandle, BottomSheetProps>(({ onAdd, onDelete }, ref) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['55%'], []);
 
-  const [editingId, setEditingId] = React.useState<number | null>(null);
+  const [editingId, setEditingId] = React.useState<string | null>(null);
 
   const [value, setValue] = React.useState<number | null>(null);
   const [clientName, setClientName] = React.useState<string>('');
@@ -77,7 +78,10 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle, BottomSheetProps
       setAddress(client?.address ?? '');
       setValue(client?.value ?? null);
       setDate(client?.date ? new Date(client.date) : randomFutureDate());
-      setEditingId(client?.id ?? null);
+      // restore recurrence state if present
+      setIsOn(client?.recurring ?? client?.isOn ?? false);
+      setSelectedFreq(client?.recurrence ?? client?.frequency ?? data[0]);
+      setEditingId(client?.id != null ? String(client.id) : null);
       bottomSheetRef.current?.present();
     },
   }));
@@ -106,10 +110,15 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle, BottomSheetProps
       keyboardBlurBehavior="restore"
       onDismiss={resetForm}
     >
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <BottomSheetView className="p-4 flex-1">
-            <Text className="text-2xl font-bold text-white">{editingId != null ? 'Editar Cliente' : 'Adicionar Cliente'}</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 30 : 80}
+        style={{ flex: 1 }}
+      >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <BottomSheetView className="flex-1">
+              <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+                <Text className="text-2xl font-bold text-white">{editingId != null ? 'Editar Cliente' : 'Adicionar Cliente'}</Text>
 
             {/* Valor + Data */}
             <View>
@@ -157,7 +166,7 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle, BottomSheetProps
                 </Pressable>
 
                 {showList && (
-                  <View style={{ position: 'absolute', top: 52, left: 0, backgroundColor: '#071026', borderRadius: 8, borderWidth: 1, borderColor: '#0f172a', overflow: 'hidden', zIndex: 1000, minWidth: 140 }}>
+                  <View style={{ position: 'absolute', top: 52, right: 0, backgroundColor: '#071026', borderRadius: 8, borderWidth: 1, borderColor: '#0f172a', overflow: 'hidden', zIndex: 1000, minWidth: 140 }}>
                     {data.map((item) => (
                       <Pressable key={item} onPress={() => { setSelectedFreq(item); setShowList(false); }} style={{ paddingVertical: 10, paddingHorizontal: 12 }}>
                         <Text style={{ color: '#fff' }}>{item}</Text>
@@ -191,7 +200,7 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle, BottomSheetProps
               {/* Left slot: trash (visible somente em edição) */}
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 {editingId != null && (
-                  <TouchableOpacity onPress={() => { onDelete?.(editingId); resetForm(); bottomSheetRef.current?.dismiss(); }} style={{ paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8 }}>
+                  <TouchableOpacity onPress={() => { onDelete?.(editingId != null ? Number(editingId) : editingId); resetForm(); bottomSheetRef.current?.dismiss(); }} style={{ paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8 }}>
                     <Ionicons name="trash-outline" size={20} color="#dc2626" />
                   </TouchableOpacity>
                 )}
@@ -204,7 +213,9 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle, BottomSheetProps
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => {
-                  const payload = { id: editingId ?? undefined, name: clientName, contact: contactName, phone, document, address, value, date };
+                  const payload = { id: editingId != null ? Number(editingId) : undefined, name: clientName, contact: contactName, phone, document, address, value, date, recurring: isOn, recurrence: selectedFreq };
+                  // debug: log payload to help track recurrence persistence
+                  console.warn('[BottomSheetCliente] saving payload:', payload);
                   onAdd?.(payload as any);
                   resetForm();
                   bottomSheetRef.current?.dismiss();
@@ -212,7 +223,8 @@ export const BottomSheetCliente = forwardRef<BottomSheetHandle, BottomSheetProps
                   <Text style={{ color: '#062024', fontWeight: '700' }}>{editingId != null ? 'Salvar alterações' : 'Adicionar'}</Text>
                 </TouchableOpacity>
               </View>
-            </View>
+              </View>
+            </ScrollView>
           </BottomSheetView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>

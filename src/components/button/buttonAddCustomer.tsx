@@ -21,15 +21,17 @@ export function ButtonAddCustomer({ className, onPress, openSheet }: ButtonAddCu
     <TouchableOpacity 
       onPress={handlePress}
     className="
-    bg-[#005c73] 
-    rounded-lg 
-    p-3 
+    bg-[#005c73]
+    rounded-lg
+    p-3
     shadow-lg
-    px-36
+    px-6
+    w-[95%]
+    mx-auto
     right-3
     "
     >
-      <Text className="text-white font-bold text-lg">Adicionar cliente</Text>
+      <Text numberOfLines={1} className="text-white font-bold text-lg text-center">Adicionar cliente</Text>
     </TouchableOpacity>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Text, 
   View, 
@@ -16,13 +16,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 import { BottomSheetCliente, BottomSheetHandle } from '@/src/components/button/bottomSheetCliente';
+import { useIsFocused } from '@react-navigation/native';
+import { DeviceEventEmitter } from 'react-native';
 
 
 export default function Home() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  type Payment = { id: number; name: string; value?: number | null; date?: string; contact?: string; phone?: string; document?: string; address?: string };
+  type Payment = { id: number; name: string; value?: number | null; date?: string; contact?: string; phone?: string; document?: string; address?: string; recurring?: boolean; recurrence?: string };
   const [payments, setPayments] = useState<Array<Payment>>([]);
   const sheetRef = useRef<BottomSheetHandle>(null);
+  const isFocused = useIsFocused();
+  const [initialized, setInitialized] = useState(false);
 
   // carousel state for payments list
   const flatRef = useRef<FlatList<any> | null>(null);
@@ -46,10 +50,47 @@ export default function Home() {
 
   const router = useRouter();
 
-  // Persist payments to AsyncStorage whenever mudam
   React.useEffect(() => {
+    if (!initialized) return;
     AsyncStorage.setItem('@FlowPay:payments', JSON.stringify(payments)).catch(() => {});
-  }, [payments]);
+  }, [payments, initialized]);
+
+  const loadPaymentsFromStorage = async () => {
+    try {
+      const raw = await AsyncStorage.getItem('@FlowPay:payments');
+      if (!raw) return;
+      const parsed: any[] = JSON.parse(raw);
+      const normalized: Payment[] = (parsed || []).map((p) => ({
+        id: Number(p?.id ?? Date.now()),
+        name: p?.name ?? p?.clientName ?? p?.title,
+        value: p?.value ?? p?.amount ?? null,
+        date: typeof p?.date === 'string' ? p.date : p?.date ? new Date(p.date).toString() : undefined,
+        contact: p?.contact ?? p?.contactName,
+        phone: p?.phone ?? undefined,
+        document: p?.document ?? undefined,
+        address: p?.address ?? undefined,
+        recurring: p?.recurring ?? p?.isOn ?? false,
+        recurrence: p?.recurrence ?? p?.frequency ?? undefined,
+      }));
+      setPayments(normalized);
+      setInitialized(true);
+    } catch (e) {
+      console.warn('failed loading payments', e);
+    }
+  };
+
+  useEffect(() => {
+    loadPaymentsFromStorage();
+  }, []);
+
+  useEffect(() => {
+    if (isFocused) loadPaymentsFromStorage();
+  }, [isFocused]);
+
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener('payments:changed', () => loadPaymentsFromStorage());
+    return () => sub.remove();
+  }, []);
 
 
   return (
@@ -200,10 +241,10 @@ export default function Home() {
               onAdd={(client) => {
                 setPayments((prev) => {
                   if (client?.id != null) {
-                    return prev.map(p => p.id === client.id ? { ...p, name: client.name, value: client.value ?? null, date: client.date ? new Date(client.date).toString() : p.date, contact: client.contact, phone: client.phone, document: client.document, address: client.address } : p);
+                    return prev.map(p => p.id === client.id ? { ...p, name: client.name, value: client.value ?? null, date: client.date ? new Date(client.date).toString() : p.date, contact: client.contact, phone: client.phone, document: client.document, address: client.address, recurring: client.recurring ?? p.recurring ?? false, recurrence: client.recurrence ?? p.recurrence ?? undefined } : p);
                   }
                   const id = Math.floor(Math.random() * 1000000);
-                  return [...prev, { id, name: client.name, value: client.value ?? null, date: client.date ? new Date(client.date).toString() : undefined, contact: client.contact, phone: client.phone, document: client.document, address: client.address }];
+                  return [...prev, { id, name: client.name, value: client.value ?? null, date: client.date ? new Date(client.date).toString() : undefined, contact: client.contact, phone: client.phone, document: client.document, address: client.address, recurring: client.recurring ?? false, recurrence: client.recurrence ?? undefined }];
                 });
               }}
               onDelete={(id) => {
