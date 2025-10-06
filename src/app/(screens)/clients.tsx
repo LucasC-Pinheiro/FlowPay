@@ -4,10 +4,10 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Colors from '@/constants/Colors';
+import NotificationsService from '@/src/services/notifications';
 import { BottomSheetCliente, BottomSheetHandle } from '@/src/components/button/bottomSheetCliente';
-import { RRule } from 'rrule';
 
-// Simple clients list screen — dark background, show name + phone, open BottomSheet to edit
+// Tela simples de clientes — fundo escuro, mostra nome + telefone, abre BottomSheet para editar
 
 type Payment = {
   id: string;
@@ -50,45 +50,10 @@ export default function ClientsScreen() {
             document: p?.document ?? undefined,
             address: p?.address ?? undefined,
           }));
-          // Advance recurring dates using rrule
-          const advanceIfNeeded = (items: typeof normalized) => {
-            const now = new Date();
-            return items.map((it) => {
-              if (!it.recurring || !it.date) return it;
-              const freqStr = (it.recurrence || '').toLowerCase();
-              let freq: any = null;
-              if (freqStr.includes('sem') || freqStr.includes('week')) freq = RRule.WEEKLY;
-              else if (freqStr.includes('mes') || freqStr.includes('month')) freq = RRule.MONTHLY;
-              else if (freqStr.includes('ano') || freqStr.includes('year')) freq = RRule.YEARLY;
-              if (!freq) return it;
-
-              try {
-                const dt = new Date(it.date);
-                const rule = new RRule({ freq, dtstart: dt, interval: 1 });
-                const next = rule.after(now, true) || rule.after(now);
-                if (next && next.getTime() !== dt.getTime()) {
-                  return { ...it, date: next.toISOString() };
-                }
-              } catch (e) {
-                return it;
-              }
-
-              return it;
-            });
-          };
-
-          const advanced = advanceIfNeeded(normalized);
-          const rawNorm = JSON.stringify(normalized);
-          const rawAdv = JSON.stringify(advanced);
-          if (rawAdv !== rawNorm) {
-            AsyncStorage.setItem('@FlowPay:payments', JSON.stringify(advanced)).catch(() => {});
-            setPayments(advanced);
-          } else {
-            setPayments(normalized);
-          }
+          setPayments(normalized);
         }
       } catch (e) {
-        console.warn('Failed to load payments', e);
+        // falha ao carregar pagamentos — ignorar e continuar
       } finally {
         setLoading(false);
       }
@@ -177,8 +142,8 @@ export default function ClientsScreen() {
                 recurrence: client.recurrence ?? p.recurrence ?? p.recurrence ?? undefined,
               }) : p));
               AsyncStorage.setItem('@FlowPay:payments', JSON.stringify(next)).catch(() => {});
-              // debug: log saved data
-              console.warn('[Clients] saved payments (update):', next);
+              // salvo
+              NotificationsService.scheduleNotificationsForPayment({ id: clientIdStr, name: client.name, date: client.date, recurring: client.recurring, recurrence: client.recurrence }).catch(() => {});
               DeviceEventEmitter.emit('payments:changed');
               return next;
             }
@@ -200,9 +165,9 @@ export default function ClientsScreen() {
             };
 
             const next = [...prev, newItem];
-            // debug: log saved data
-            console.warn('[Clients] saved payments (create):', next);
+            // salvo
             AsyncStorage.setItem('@FlowPay:payments', JSON.stringify(next)).catch(() => {});
+            NotificationsService.scheduleNotificationsForPayment({ id, name: newItem.name, date: newItem.date, recurring: newItem.recurring, recurrence: newItem.recurrence }).catch(() => {});
             DeviceEventEmitter.emit('payments:changed');
             return next;
           });
@@ -212,6 +177,7 @@ export default function ClientsScreen() {
             const idStr = String(id);
             const next = prev.filter((p) => String(p.id) !== idStr);
             AsyncStorage.setItem('@FlowPay:payments', JSON.stringify(next)).catch(() => {});
+            NotificationsService.cancelNotificationsForPayment(idStr).catch(() => {});
             DeviceEventEmitter.emit('payments:changed');
             return next;
           });
