@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 import { BottomSheetCliente, BottomSheetHandle } from '@/src/components/button/bottomSheetCliente';
+import { startOfWeek, addDays } from 'date-fns';
 import { useIsFocused } from '@react-navigation/native';
 import { DeviceEventEmitter } from 'react-native';
 
@@ -33,18 +34,18 @@ export default function Home() {
   const [carouselIndex, setCarouselIndex] = useState<number>(0);
   const CARD_WIDTH = Math.min(Dimensions.get('window').width * 0.83, 360);
 
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const mondayOffset = (dayOfWeek + 6) % 7; 
-  const monday = new Date(today);
+  // Use date-fns to compute the start of the week (Monday) and the 7 days
+  const [now, setNow] = useState<Date>(new Date());
 
-  monday.setDate(today.getDate() - mondayOffset);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60 * 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  const weekDates = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d;
-  });
+  useEffect(() => { if (isFocused) setNow(new Date()); }, [isFocused]);
+
+  const start = startOfWeek(now, { weekStartsOn: 1 }); // Monday
+  const weekDates = Array.from({ length: 7 }).map((_, i) => addDays(start, i));
  
   const weekdayShorts = ['Seg','Ter','Qua','Qui','Sex','Sab','Dom'];
 
@@ -139,7 +140,7 @@ export default function Home() {
 
             <View className="mt-4 left-3">
             {selectedDay !== null ? (
-              weekDates[selectedDay].toDateString() === today.toDateString() ? (
+              weekDates[selectedDay].toDateString() === now.toDateString() ? (
                 <Text className="text-white font-bold">Hoje</Text>
               ) : (
                 <Text className="text-white/80 font-bold">{`${weekdayShorts[selectedDay]}, ${weekDates[selectedDay].getDate()}/${weekDates[selectedDay].getMonth() + 1}`}</Text>

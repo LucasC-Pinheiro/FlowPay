@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Colors from '@/constants/Colors';
 import { BottomSheetCliente, BottomSheetHandle } from '@/src/components/button/bottomSheetCliente';
+import { RRule } from 'rrule';
 
 // Simple clients list screen — dark background, show name + phone, open BottomSheet to edit
 
@@ -49,7 +50,42 @@ export default function ClientsScreen() {
             document: p?.document ?? undefined,
             address: p?.address ?? undefined,
           }));
-          setPayments(normalized);
+          // Advance recurring dates using rrule
+          const advanceIfNeeded = (items: typeof normalized) => {
+            const now = new Date();
+            return items.map((it) => {
+              if (!it.recurring || !it.date) return it;
+              const freqStr = (it.recurrence || '').toLowerCase();
+              let freq: any = null;
+              if (freqStr.includes('sem') || freqStr.includes('week')) freq = RRule.WEEKLY;
+              else if (freqStr.includes('mes') || freqStr.includes('month')) freq = RRule.MONTHLY;
+              else if (freqStr.includes('ano') || freqStr.includes('year')) freq = RRule.YEARLY;
+              if (!freq) return it;
+
+              try {
+                const dt = new Date(it.date);
+                const rule = new RRule({ freq, dtstart: dt, interval: 1 });
+                const next = rule.after(now, true) || rule.after(now);
+                if (next && next.getTime() !== dt.getTime()) {
+                  return { ...it, date: next.toISOString() };
+                }
+              } catch (e) {
+                return it;
+              }
+
+              return it;
+            });
+          };
+
+          const advanced = advanceIfNeeded(normalized);
+          const rawNorm = JSON.stringify(normalized);
+          const rawAdv = JSON.stringify(advanced);
+          if (rawAdv !== rawNorm) {
+            AsyncStorage.setItem('@FlowPay:payments', JSON.stringify(advanced)).catch(() => {});
+            setPayments(advanced);
+          } else {
+            setPayments(normalized);
+          }
         }
       } catch (e) {
         console.warn('Failed to load payments', e);
